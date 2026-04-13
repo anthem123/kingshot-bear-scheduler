@@ -105,7 +105,7 @@ def arena():
 @app.route("/bear", methods=["GET", "POST"])
 @require_api_key
 def bear():
-    body = request.json(force=True) or { }
+    body = request.get_json(force=True) or { }
     thread = threading.Thread(
         target=send_scheduled_webhooks,
         kwargs={
