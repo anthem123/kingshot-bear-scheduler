@@ -117,7 +117,6 @@ def bear():
         daemon=True
     )
     thread.start()
-
     return "Bear notification scheduled successfully."
 
 
