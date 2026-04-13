@@ -89,7 +89,7 @@ def index():
     return jsonify({"message": "Hello, World!", "status": "ok"})
 
 
-@app.route("/arena", methods=["POST"])
+@app.route("/arena", methods=["GET", "POST"])
 @require_api_key
 def arena():
     send_discord_webhook(
@@ -102,7 +102,7 @@ def arena():
     return "Arena notification sent successfully."
 
 
-@app.route("/bear", methods=["POST"])
+@app.route("/bear", methods=["GET", "POST"])
 @require_api_key
 def bear():
     body = request.json or { }
