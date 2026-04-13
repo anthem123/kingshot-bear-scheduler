@@ -103,7 +103,7 @@ def arena():
 
 @app.route("/bear", methods=["POST"])
 @require_api_key
-def arena():
+def bear():
     body = request.json or { }
     send_scheduled_webhooks(
         webhook_url=os.getenv("BEAR_WEBHOOK_URL", ""),
