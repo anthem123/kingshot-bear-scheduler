@@ -1,9 +1,22 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests
 import json
 
 app = Flask(__name__)
+
+API_KEY = os.environ.get("API_KEY")
+
+def require_api_key(f):
+    def wrapper(*args, **kwargs):
+        key = request.headers.get("X-API-Key")
+        if not key or key != API_KEY:
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+
+    wrapper.__name__ = f.__name__
+    return wrapper
+
 
 def send_discord_webhook(webhook_url, message, role_id=None, username="Bot", avatar_url=None):
 
@@ -32,6 +45,7 @@ def send_discord_webhook(webhook_url, message, role_id=None, username="Bot", ava
         print("✅ NEK Bear 1 Reminder Message sent successfully.")
     except requests.exceptions.RequestException as e:
         print(f"❌ Failed to send NEK Bear 1 Reminder message: {e}")
+
 
 @app.route("/")
 def index():
