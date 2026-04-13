@@ -101,16 +101,22 @@ def arena():
 
     return "Arena notification sent successfully."
 
+
 @app.route("/bear", methods=["POST"])
 @require_api_key
 def bear():
     body = request.json or { }
-    send_scheduled_webhooks(
-        webhook_url=os.getenv("BEAR_WEBHOOK_URL", ""),
-        message_part=body.get("event_type", "N/A"),
-        username="Bear Reminder",
-        avatar_url="https://i.postimg.cc/SN2jZmR5/REMINDER.png"
+    thread = threading.Thread(
+        target=send_scheduled_webhooks,
+        kwargs={
+            "webhook_url": os.getenv("BEAR_WEBHOOK_URL", ""),
+            "message_part": body.get("event_type", "N/A"),
+            "username": "Bear Reminder",
+            "avatar_url": "https://i.postimg.cc/SN2jZmR5/REMINDER.png"
+        },
+        daemon=True
     )
+    thread.start()
 
     return "Bear notification scheduled successfully."
 
