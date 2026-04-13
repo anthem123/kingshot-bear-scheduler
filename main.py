@@ -48,6 +48,7 @@ def send_discord_webhook(webhook_url, message, role_id=None, username="Bot", ava
 
 
 @app.route("/")
+@require_api_key
 def index():
     return jsonify({"message": "Hello, World!", "status": "ok"})
 
