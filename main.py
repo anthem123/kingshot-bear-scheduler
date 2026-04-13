@@ -59,9 +59,9 @@ def send_scheduled_webhooks(webhook_url, message_part, username="Bot", avatar_ur
     }
 
     webhooks = [
-        (0, f"${message_part} starts in 30 minutes ⏰"),
-        (20 * 60, f"${message_part} starts in 10 minutes ⏰"),
-        (10 * 60, f"${message_part} starts now!"),
+        (0, f"{message_part} starts in 30 minutes ⏰"),
+        (20 * 60, f"{message_part} starts in 10 minutes ⏰"),
+        (10 * 60, f"{message_part} starts now!"),
     ]
 
     for delay, message in webhooks:
@@ -106,6 +106,7 @@ def arena():
 @require_api_key
 def bear():
     body = request.get_json(force=True, silent=True) or { }
+    print(body)
     thread = threading.Thread(
         target=send_scheduled_webhooks,
         kwargs={
