@@ -3,6 +3,8 @@ from flask import Flask, jsonify, request
 import requests
 import json
 from dotenv import load_dotenv
+import threading
+import time
 
 load_dotenv()
 app = Flask(__name__)
@@ -44,15 +46,48 @@ def send_discord_webhook(webhook_url, message, username="Bot", avatar_url=None):
     try:
         response = requests.post(webhook_url, data=json.dumps(payload), headers=headers, timeout=10)
         response.raise_for_status()
-        print("✅ NEK Bear 1 Reminder Message sent successfully.")
     except requests.exceptions.RequestException as e:
-        print(f"❌ Failed to send NEK Bear 1 Reminder message: {e}")
+        print(f"❌ Failed to send Reminder message: {e}")
 
+
+def send_scheduled_webhooks(webhook_url, message_part, username="Bot", avatar_url=None):
+    if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/"):
+        raise ValueError("Invalid Discord webhook URL.")
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    webhooks = [
+        (0, f"${message_part} starts in 30 minutes ⏰"),
+        (20 * 60, f"${message_part} starts in 10 minutes ⏰"),
+        (10 * 60, f"${message_part} starts now!"),
+    ]
+
+    for delay, message in webhooks:
+        time.sleep(delay)
+        # If a role ID is provided, format the mention
+        if ROLE_ID:
+            message = f"<@&{ROLE_ID}> {message}"
+
+        payload = {
+            "content": message,
+            "username": username
+        }
+        if avatar_url:
+            payload["avatar_url"] = avatar_url
+        try:
+            response = requests.post(webhook_url, data=json.dumps(payload), headers=headers, timeout=10)
+            response.raise_for_status()
+            print("Message sent successfully.")
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Failed to send Reminder message: {e}")
 
 @app.route("/")
 @require_api_key
 def index():
     return jsonify({"message": "Hello, World!", "status": "ok"})
+
 
 @app.route("/arena", methods=["POST"])
 @require_api_key
@@ -65,6 +100,19 @@ def arena():
     )
 
     return "Arena notification sent successfully."
+
+@app.route("/bear", methods=["POST"])
+@require_api_key
+def arena():
+    body = request.json or { }
+    send_scheduled_webhooks(
+        webhook_url=os.getenv("BEAR_WEBHOOK_URL", ""),
+        message_part=body.get("event_type", "N/A"),
+        username="Bear Reminder",
+        avatar_url="https://i.postimg.cc/SN2jZmR5/REMINDER.png"
+    )
+
+    return "Bear notification scheduled successfully."
 
 
 if __name__ == "__main__":
