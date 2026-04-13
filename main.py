@@ -105,13 +105,13 @@ def arena():
 @app.route("/bear", methods=["GET", "POST"])
 @require_api_key
 def bear():
-    body = request.get_json(force=True, silent=True) or { }
-    print(body)
+    event_type = request.args.get("event_type", "N/A")
+    print(event_type)
     thread = threading.Thread(
         target=send_scheduled_webhooks,
         kwargs={
             "webhook_url": os.getenv("BEAR_WEBHOOK_URL", ""),
-            "message_part": body.get("event_type", "N/A"),
+            "message_part": event_type,
             "username": "Bear Reminder",
             "avatar_url": "https://i.postimg.cc/SN2jZmR5/REMINDER.png"
         },
