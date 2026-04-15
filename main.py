@@ -22,14 +22,43 @@ def require_api_key(f):
     wrapper.__name__ = f.__name__
     return wrapper
 
+event_type_role_dict = {
+    "bear_sol_1": {
+        "role_id": "1461925770732765438",
+        "message": "SOL Bear Trap #1"
+    },
+    "bear_sol_2": {
+        "role_id": "1461925770732765438",
+        "message": "SOL Bear Trap #2"
+    },
+    "bear_nek_1": {
+        "role_id": "1473861137467703346",
+        "message": "NEK Bear Trap #1"
+    },
+    "bear_nek_2": {
+        "role_id": "1473861137467703346",
+        "message": "NEK Bear Trap #2"
+    },
+    "arena": {
+        "role_id": "1461925772657688752",
+        "message": "🔥 Arena reset in 15 mins! ⏰⚔️"
+    }
+}
 
-def send_discord_webhook(webhook_url, message, username="Bot", avatar_url=None):
+def send_discord_webhook(
+        webhook_url,
+        event_type=None,
+        username="Bot",
+        avatar_url=None
+):
     if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/"):
         raise ValueError("Invalid Discord webhook URL.")
 
     # If a role ID is provided, format the mention
-    if ROLE_ID:
-        message = f"<@&{ROLE_ID}> {message}"
+    message = ""
+    if event_type:
+        event_info = event_type_role_dict[event_type]
+        message = f"<@&{event_info['role_id']}> {event_info['message']}"
 
     payload = {
         "content": message,
@@ -50,13 +79,15 @@ def send_discord_webhook(webhook_url, message, username="Bot", avatar_url=None):
         print(f"❌ Failed to send Reminder message: {e}")
 
 
-def send_scheduled_webhooks(webhook_url, message_part, username="Bot", avatar_url=None):
+def send_scheduled_webhooks(webhook_url, event_type, username="Bot", avatar_url=None):
     if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/"):
         raise ValueError("Invalid Discord webhook URL.")
 
     headers = {
         "Content-Type": "application/json"
     }
+
+    message_part = event_type_role_dict[event_type]["message"]
 
     webhooks = [
         (0, f"{message_part} starts in 30 minutes ⏰"),
@@ -67,8 +98,8 @@ def send_scheduled_webhooks(webhook_url, message_part, username="Bot", avatar_ur
     for delay, message in webhooks:
         time.sleep(delay)
         # If a role ID is provided, format the mention
-        if ROLE_ID:
-            message = f"<@&{ROLE_ID}> {message}"
+
+        message = f"<@&{event_type_role_dict[event_type]['role_id']}> {message}"
 
         payload = {
             "content": message,
@@ -94,7 +125,7 @@ def index():
 def arena():
     send_discord_webhook(
         webhook_url=os.getenv("ARENA_WEBHOOK_URL", ""),
-        message="🔥 Arena reset in 15 mins! ⏰⚔️",
+        event_type="arena",
         username="Arena Reminder",
         avatar_url="https://i.postimg.cc/SN2jZmR5/REMINDER.png"
     )
@@ -111,7 +142,7 @@ def bear():
         target=send_scheduled_webhooks,
         kwargs={
             "webhook_url": os.getenv("BEAR_WEBHOOK_URL", ""),
-            "message_part": event_type,
+            "event_type": event_type,
             "username": "Bear Reminder",
             "avatar_url": "https://i.postimg.cc/SN2jZmR5/REMINDER.png"
         },
